@@ -1,0 +1,65 @@
+/* Toàn bộ ứng dụng */
+.root {
+    -fx-padding: 10;
+    -fx-font-family: Arial, sans-serif;
+    -fx-font-size: 14px;
+}
+
+/* Danh sách website */
+.list-view {
+    -fx-pref-height: 200px;
+    -fx-border-color: #ccc;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+}
+
+/* Các nút */
+.button {
+    -fx-background-color: #007bff;
+    -fx-text-fill: white;
+    -fx-padding: 10px 20px;
+    -fx-font-size: 14px;
+    -fx-border-radius: 5px;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #0056b3;
+}
+
+/* Các checkbox */
+.check-box {
+    -fx-padding: 5px;
+}
+
+/* Trường nhập liệu */
+.text-field {
+    -fx-padding: 5px;
+    -fx-border-color: #ccc;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+}
+
+/* GridPane */
+.grid-pane {
+    -fx-padding: 10px;
+    -fx-hgap: 10px;
+    -fx-vgap: 10px;
+}
+
+/* Label */
+.label {
+    -fx-font-weight: bold;
+    -fx-padding: 5px;
+}
+
+/* Đặt màu cho server status label */
+#serverStatusLabel {
+    -fx-text-fill: #f00;
+    -fx-font-weight: bold;
+}
+
+/* VBox và GridPane layout */
+.vbox {
+    -fx-spacing: 10px;
+}
