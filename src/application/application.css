@@ -1,65 +1,99 @@
-/* Toàn bộ ứng dụng */
-.root {
-    -fx-padding: 10;
-    -fx-font-family: Arial, sans-serif;
+/* CSS cho TabPane (thanh tab) */
+.tab-pane {
+    -fx-tab-max-width: 120px;
+    -fx-background-color: #f1f3f4;
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 0 0 1px 0;
+}
+
+/* CSS cho các Tab */
+.tab {
+    -fx-background-color: #e0e0e0;
+    -fx-padding: 8px 8px;
+    -fx-text-fill: #5f6368;
     -fx-font-size: 14px;
+    -fx-border-color: #ffffff;
+    -fx-border-width: 0 0 0 1px; /* Thêm đường viền dọc bên phải */
+    -fx-background-radius: 8px 8px 0 0;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
 
-/* Danh sách website */
-.list-view {
-    -fx-pref-height: 200px;
-    -fx-border-color: #ccc;
-    -fx-border-width: 1px;
-    -fx-border-radius: 5px;
+.tab:selected {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #000000;
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 1px 1px 0 1px;
 }
 
-/* Các nút */
+.tab:hover {
+    -fx-background-color: #d9d9d9;
+    -fx-border-color: #e0e0e0;
+}
+
+/* CSS cho nút thêm tab */
+.tab .tab-graphic {
+    -fx-background-color: transparent;
+}
+
+.tab-pane .tab-header-area .tab-add-button {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 50%;
+    -fx-padding: 5px;
+}
+
+.tab-pane .tab-header-area .tab-add-button:hover {
+    -fx-background-color: #d9d9d9;
+}
+
+/* CSS cho ToolBar */
+.tool-bar {
+    -fx-background-color: #ffffff;
+    -fx-padding: 5px;
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 0 0 1px 0;
+}
+
 .button {
-    -fx-background-color: #007bff;
-    -fx-text-fill: white;
-    -fx-padding: 10px 20px;
-    -fx-font-size: 14px;
-    -fx-border-radius: 5px;
-    -fx-cursor: hand;
+    -fx-background-color: transparent;
+    -fx-padding: 8px;
 }
 
 .button:hover {
-    -fx-background-color: #0056b3;
+    -fx-background-color: #e0e0e0;
 }
 
-/* Các checkbox */
-.check-box {
-    -fx-padding: 5px;
+.button:pressed {
+    -fx-background-color: #cccccc;
 }
 
-/* Trường nhập liệu */
+/* CSS cho TextField (ô nhập URL) */
 .text-field {
-    -fx-padding: 5px;
-    -fx-border-color: #ccc;
-    -fx-border-width: 1px;
-    -fx-border-radius: 5px;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 20px;
+    -fx-padding: 6px;
+    -fx-font-size: 14px;
+    -fx-text-fill: #5f6368;
 }
 
-/* GridPane */
-.grid-pane {
-    -fx-padding: 10px;
-    -fx-hgap: 10px;
-    -fx-vgap: 10px;
+.text-field:focused {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #4285f4;
 }
 
-/* Label */
-.label {
-    -fx-font-weight: bold;
-    -fx-padding: 5px;
+/* CSS cho WebView */
+.web-view {
+    -fx-background-color: #ffffff;
 }
 
-/* Đặt màu cho server status label */
-#serverStatusLabel {
-    -fx-text-fill: #f00;
-    -fx-font-weight: bold;
-}
-
-/* VBox và GridPane layout */
-.vbox {
-    -fx-spacing: 10px;
+/* CSS cho thanh trạng thái */
+.status-bar {
+    -fx-background-color: #f1f3f4;
+    -fx-padding: 4px;
+    -fx-text-fill: #5f6368;
+    -fx-font-size: 12px;
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 1px 0 0 0;
 }
