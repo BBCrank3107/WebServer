@@ -10,6 +10,11 @@ import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyStore;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -22,6 +27,16 @@ public class Server {
 	private String host = "localhost";
 	private boolean useSSL = false;
 	private static final Logger logger = Logger.getLogger(Server.class.getName());
+	
+	private static final String DB_URL = "jdbc:mysql://localhost:3306/web_server";
+	private static final String DB_USER = "root";
+	private static final String DB_PASSWORD = "";
+
+	// Kết nối tới cơ sở dữ liệu
+	private Connection connectToDatabase() throws SQLException {
+	    return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+	}
+
 
 	private static final Map<String, String> MIME_TYPES = Map.of(".html", "text/html", ".css", "text/css", ".js",
 			"application/javascript", ".png", "image/png", ".jpg", "image/jpeg", ".gif", "image/gif", ".ico",
@@ -342,46 +357,40 @@ public class Server {
 	}
 
 	private boolean validateUser(String username, String password) {
-		try (BufferedReader reader = new BufferedReader(new FileReader("accounts.txt"))) {
-			String line;
-			while ((line = reader.readLine()) != null) {
-				String[] parts = line.split(":");
-				if (parts.length == 2 && parts[0].equals(username) && parts[1].equals(password)) {
-					return true;
-				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return false;
+	    try (Connection conn = connectToDatabase();
+	        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM user WHERE UserName = ? AND UserPass = ?")) {
+	        stmt.setString(1, username);
+	        stmt.setString(2, password);
+	        ResultSet rs = stmt.executeQuery();
+
+	        return rs.next();  // Trả về true nếu tìm thấy người dùng
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        return false;
+	    }
 	}
 
 	private boolean saveAccount(String username, String password) {
-		try (BufferedWriter writer = new BufferedWriter(new FileWriter("accounts.txt", true))) {
-			if (isUserExists(username)) {
-				return false;
-			}
-			writer.write(username + ":" + password);
-			writer.newLine();
-			return true;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
+	    try (Connection conn = connectToDatabase();
+	         PreparedStatement checkStmt = conn.prepareStatement("SELECT * FROM user WHERE UserName = ?");
+	         PreparedStatement insertStmt = conn.prepareStatement("INSERT INTO user (UserName, UserPass) VALUES (?, ?)")) {
 
-	private boolean isUserExists(String username) {
-		try (BufferedReader reader = new BufferedReader(new FileReader("accounts.txt"))) {
-			String line;
-			while ((line = reader.readLine()) != null) {
-				if (line.startsWith(username + ":")) {
-					return true;
-				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return false;
+	        // Kiểm tra xem người dùng đã tồn tại chưa
+	        checkStmt.setString(1, username);
+	        ResultSet rs = checkStmt.executeQuery();
+	        if (rs.next()) {
+	            return false;  // Người dùng đã tồn tại
+	        }
+
+	        // Chèn người dùng mới vào cơ sở dữ liệu
+	        insertStmt.setString(1, username);
+	        insertStmt.setString(2, password);
+	        insertStmt.executeUpdate();
+	        return true;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        return false;
+	    }
 	}
 
 	private File createUserDirectory(String username) {
