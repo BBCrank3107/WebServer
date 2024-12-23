@@ -418,62 +418,71 @@ public class RequestHandlers {
 	}
 
 	public void handleListFilesInProjectRequest(HttpExchange exchange) throws IOException {
-	    if ("GET".equals(exchange.getRequestMethod())) {
-	        Map<String, String> queryParams = parseData(exchange.getRequestURI().getQuery());
-	        String username = queryParams.get("username");
-	        String projectName = queryParams.get("projectName");
+		if ("GET".equals(exchange.getRequestMethod())) {
+			Map<String, String> queryParams = parseData(exchange.getRequestURI().getQuery());
+			String username = queryParams.get("username");
+			String projectName = queryParams.get("projectName");
 
-	        if (username != null && projectName != null) {
-	            List<String> fileInfoList = new ArrayList<>();
+			if (username != null && projectName != null) {
+				try (Connection conn = DatabaseConnection.getConnection()) {
+					String sqlUserId = "SELECT UserID FROM user WHERE UserName = ?";
+					int userId;
 
-	            try (Connection conn = DatabaseConnection.getConnection()) {
-	                String sqlUserId = "SELECT UserID FROM user WHERE UserName = ?";
-	                int userId;
-	                
-	                try (PreparedStatement stmtUser = conn.prepareStatement(sqlUserId)) {
-	                    stmtUser.setString(1, username);
-	                    try (ResultSet rsUser = stmtUser.executeQuery()) {
-	                        if (rsUser.next()) {
-	                            userId = rsUser.getInt("UserID");
-	                        } else {
-	                            sendResponse(exchange, 404, "User not found.");
-	                            return;
-	                        }
-	                    }
-	                }
+					try (PreparedStatement stmtUser = conn.prepareStatement(sqlUserId)) {
+						stmtUser.setString(1, username);
+						try (ResultSet rsUser = stmtUser.executeQuery()) {
+							if (rsUser.next()) {
+								userId = rsUser.getInt("UserID");
+							} else {
+								sendResponse(exchange, 404, "User not found.");
+								return;
+							}
+						}
+					}
 
-	                String sqlFileInfo = "SELECT FileName, FileSize, TimeUpload FROM file WHERE UserID = ? AND ProjectName = ?";
-	                try (PreparedStatement stmtFile = conn.prepareStatement(sqlFileInfo)) {
-	                    stmtFile.setInt(1, userId);
-	                    stmtFile.setString(2, projectName);
+					String sqlFileInfo = "SELECT FileName, FileSize, TimeUpload FROM file WHERE UserID = ? AND ProjectName = ?";
+					try (PreparedStatement stmtFile = conn.prepareStatement(sqlFileInfo)) {
+						stmtFile.setInt(1, userId);
+						stmtFile.setString(2, projectName);
 
-	                    try (ResultSet rsFile = stmtFile.executeQuery()) {
-	                        while (rsFile.next()) {
-	                            String fileName = rsFile.getString("FileName");
-	                            long fileSize = rsFile.getLong("FileSize");
-	                            Timestamp timeUpload = rsFile.getTimestamp("TimeUpload");
+						try (ResultSet rsFile = stmtFile.executeQuery()) {
+							StringBuilder jsonResponse = new StringBuilder();
+							jsonResponse.append("[");
 
-	                            long elapsedTimeMillis = System.currentTimeMillis() - timeUpload.getTime();
-	                            String elapsedTime = formatElapsedTime(elapsedTimeMillis);
+							boolean first = true;
+							while (rsFile.next()) {
+								if (!first) {
+									jsonResponse.append(",");
+								}
+								first = false;
 
-	                            String fileInfo = String.format("%-30s %-15s %20s", fileName, formatFileSize(fileSize), elapsedTime);
-	                            fileInfoList.add(fileInfo);
-	                        }
-	                    }
-	                }
+								String fileName = rsFile.getString("FileName");
+								long fileSize = rsFile.getLong("FileSize");
+								Timestamp timeUpload = rsFile.getTimestamp("TimeUpload");
+								long elapsedTimeMillis = System.currentTimeMillis() - timeUpload.getTime();
+								String elapsedTime = formatElapsedTime(elapsedTimeMillis);
 
-	                String response = String.join(",", fileInfoList);
-	                sendResponse(exchange, 200, response);
-	            } catch (SQLException e) {
-	                e.printStackTrace();
-	                sendResponse(exchange, 500, "Database error");
-	            }
-	        } else {
-	            sendResponse(exchange, 400, "Missing username or projectName parameter.");
-	        }
-	    } else {
-	        exchange.sendResponseHeaders(405, -1);
-	    }
+								jsonResponse.append("{").append("\"fileName\":\"").append(fileName).append("\",")
+										.append("\"fileSize\":\"").append(formatFileSize(fileSize)).append("\",")
+										.append("\"timeUpload\":\"").append(timeUpload.toString()).append("\",")
+										.append("\"elapsedTime\":\"").append(elapsedTime).append("\"").append("}");
+							}
+
+							jsonResponse.append("]");
+							sendResponse(exchange, 200, jsonResponse.toString());
+						}
+					}
+
+				} catch (SQLException e) {
+					e.printStackTrace();
+					sendResponse(exchange, 500, "Database error");
+				}
+			} else {
+				sendResponse(exchange, 400, "Missing username or projectName parameter.");
+			}
+		} else {
+			exchange.sendResponseHeaders(405, -1);
+		}
 	}
 
 	private String formatElapsedTime(long elapsedTimeMillis) {
